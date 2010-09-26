@@ -16,62 +16,90 @@
 	$wp_revision = '';
 	$wp_local_dir = $_SERVER['DOCUMENT_ROOT'] . '/wordpress';
 	
+	$svn = new phpsvnclient($wp_repository);
 	
-	echo "Trying to increase php.ini memory limit<br />\n";
-	$mem = ini_set('memory_limit', $svn_memory_limit);
-	if( $mem != FALSE ){
-		$mem_new = ini_get('memory_limit');
-		echo "Old memory limit: " . $mem . "<br />\nNew memory limit: " . $mem_new . "<br />\n";
-	} else {
-		echo "Increasing memory limit failed!<br />\n";
-	}
+	$wp_revision_latest = $svn->getVersion();
 	
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
 	
-	if( isset($_GET['wp-version']) && $_GET['wp-version'] != '' ){
+	<title>parched-art</title>
 	
-		$wp_version = $_GET['wp-version'];
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<meta http-equiv="content-language" content="de-de" />
+	<meta http-equiv="author" content="Kevin Schmitt" />
+	
+	<meta name="language" content="de-de" />
+	<meta name="robots" content="noindex,nofollow" />
+
+</head>
+<body>
+	Connected to <?=$wp_repository?><br />
+	Latest revision is: <?=$wp_revision_latest?><br />
+	<form method="post" action="<?=$_SERVER['PHP_SELF']?>">
+		<fieldset>
 		
-	}
+			<legend>Repository-Setup</legend>
+			
+			<label for="wp-repository">Repository-URL</label>
+			<input type="text" name="wp-repository" id="wp-repository" value="<?=$wp_repository?>" />
+			
+			<label for="wp-local-dir">Local Installation-Directory</label>
+			<input type="text" name="wp-local-dir" id="wp-local-dir" value="<?=$wp_local_dir?>" />
+			
+		</fieldset>
+		<fieldset>
+		
+			<legend>Wordpress-Version</legend>
+			
+			<label for="wp-version">Wordpress-Version</label>
+			<input type="text" name="wp-version" id="wp-version" value="<?=$wp_version?>" />
+			
+			<label for="wp-revision">Revisions-Number</label>
+			<input type="text" name="wp-revision" id="wp-revision" value="<?=$wp_revision_latest?>" />
+			
+			<label for="get-wordpress">Create new local WordPress-Installation?</label>
+			<input type="submit" name="get-wordpress" id="get-wordpress" value="yes" />
+			
+		</fieldset>
+	</form>
+</body>
+</html>
+<?php
 	
+	if( isset($_POST['get-wordpress']) && $_POST['get-wordpress'] == 'yes' ){
 	
-	if( isset($_GET['wp-revision']) && $_GET['wp-revision'] != '' ){
-	
-		$wp_revision = $_GET['wp-revision'];
+		if( isset($_POST['wp-repository']) && $_POST['wp-repository'] != '' ){
+			$wp_repository = $_POST['wp-repository'];
+		}
 		
-	}
+		if( isset($_POST['wp-local-dir']) && $_POST['wp-local-dir'] != '' ){
+			$wp_local_dir = $_POST['wp-local-dir'];
+		}
 		
-	
-	if( isset($_GET['get-wordpress']) && $_GET['get-wordpress'] == 'yes' ){
+		if( isset($_POST['wp-version']) && $_POST['wp-version'] != '' ){
+			$wp_version = $_POST['wp-version'];
+		}
 		
-		echo "Initializing SVN client...<br />\n";
-		echo "Connecting to $wp_repository ...<br />\n";
-		$svn = new phpsvnclient($wp_repository);
+		if( isset($_POST['wp-revision']) && $_POST['wp-revision'] != '' ){
+			$wp_revision = $_POST['wp-revision'];
+		}
 		
-		// deprecated
-		//$svn->setRepository( $wp_repository );
-		
-		$wp_revision_latest = $svn->getVersion();
-		echo "Latest revision is: $wp_revision_latest<br />\n";
-		
+		$mem = ini_set('memory_limit', $svn_memory_limit);
+		if( $mem != FALSE ){
+			$mem_new = ini_get('memory_limit');
+		} else {
+			die("Increasing memory limit failed!<br />\n");
+		}
 		
 		if( isset($wp_revision) && $wp_revision != '' ) {
-		
-			$files = $svn->getDirectoryFiles( '/tags/' . $wp_version . '/', $wp_revision );
-			
-		} else {
-		
-			$files = $svn->getDirectoryFiles( '/tags/' . $wp_version . '/' );
-			
 			echo "Writing files to: " . $wp_local_dir . "<br />\nThis may take several minutes.<br />\n";
 			$svn->checkout( '/tags/' . $wp_version . '/', $wp_local_dir );
-
-		}
-		
-/*		if( isset($files) ){
-			echo "<pre>\n";
-			print_r($files);
-			echo "</pre>\n";
-		}
-*/		
+					} else {
+			echo "Writing files to: " . $wp_local_dir . "<br />\nThis may take several minutes.<br />\n";
+			$svn->checkout( '/tags/' . $wp_version . '/', $wp_local_dir );
+		}		
 	}
 ?>
