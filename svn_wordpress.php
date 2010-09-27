@@ -4,7 +4,7 @@
  * 
  * Gets WordPress via SVN.
  * 
- * Usage: Call svn_wordpress.php enter repository URL and local installation path
+ * Usage: Call svn_wordpress.php, enter repository URL and local installation path.
  *        Check version and revision & click yes to checkout from repoository.
  *
  * @author Kevin Schmitt
